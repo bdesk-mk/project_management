@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>税理士ワークシフトサロン｜管理ダッシュボード</title>
+<style>
+:root{--navy:#1F2D3D;--gold:#A88B47;--rose:#A85569;--blue:#4A6FA5;--bg:#F4F8FB;--ink:#2B3440;--mute:#6B7886;--line:#E2E8EE;--red:#C0392B;--amber:#B9770E;--green:#2E7D57;}
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Yu Gothic","Hiragino Kaku Gothic ProN","Meiryo",sans-serif;background:var(--bg);color:var(--ink);font-size:14px;}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 20px 60px;}
+header.top{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+h1{font-size:22px;margin:0;color:var(--navy);}
+.sub{color:var(--mute);font-size:12.5px;margin-top:3px;}
+.today{font-size:13px;color:var(--navy);font-weight:bold;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 12px;}
+.chips{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 12px;}
+.chip{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 14px;min-width:96px;text-align:center;}
+.chip .n{font-size:20px;font-weight:bold;display:block;line-height:1.1;}
+.chip .l{font-size:11px;color:var(--mute);}
+.chip.red .n{color:var(--red);}.chip.green .n{color:var(--green);}.chip.amber .n{color:var(--amber);}.chip.navy .n{color:var(--navy);}
+.alarm{background:#FDEDEC;border:1px solid #E6B0AA;color:var(--red);border-radius:10px;padding:11px 15px;margin-bottom:14px;font-weight:bold;display:flex;align-items:center;gap:10px;cursor:pointer;}
+.alarm.hidden{display:none;}
+.alarm .go{margin-left:auto;font-size:12px;background:var(--red);color:#fff;border:none;border-radius:6px;padding:6px 11px;cursor:pointer;}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:12px;}
+.views{display:flex;gap:6px;flex-wrap:wrap;}
+.vbtn{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:8px;padding:7px 13px;cursor:pointer;font-size:13px;font-weight:bold;}
+.vbtn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+select,input[type=search]{border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px;font-family:inherit;background:#fff;}
+input[type=search]{min-width:150px;}
+.toggle{display:flex;align-items:center;gap:5px;font-size:12.5px;color:var(--mute);cursor:pointer;user-select:none;}
+.spacer{flex:1;}
+.subtabs{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:0 2px 16px;}
+.subtabs.hidden{display:none;}
+.subtabs .lbl{font-size:12px;color:var(--mute);margin-right:2px;}
+.stab{border:1px solid var(--line);background:#fff;color:var(--navy);border-radius:20px;padding:6px 15px;cursor:pointer;font-size:12.5px;font-weight:bold;}
+.stab.active{background:var(--gold);color:#fff;border-color:var(--gold);}
+.group{margin-bottom:20px;}
+.ghead{display:flex;align-items:center;gap:12px;margin-bottom:8px;}
+.ghead h2{font-size:15.5px;margin:0;color:var(--navy);}
+.gcount{font-size:12px;color:var(--mute);}
+.pbar{flex:1;height:8px;background:#EAEFF4;border-radius:5px;overflow:hidden;max-width:280px;}
+.pbar>i{display:block;height:100%;background:var(--green);border-radius:5px;}
+.row{display:flex;align-items:flex-start;gap:11px;background:#fff;border:1px solid var(--line);border-left-width:4px;border-radius:9px;padding:10px 13px;margin-bottom:7px;}
+.row.done{opacity:.55;}
+.row.done .name{text-decoration:line-through;}
+.row.overdue{background:#FDEDEC;border-color:#E6B0AA;}
+.row.soon{background:#FEF6E7;border-color:#F0D090;}
+.row.cat-prod{border-left-color:var(--blue);}
+.row.cat-mkt{border-left-color:var(--gold);}
+.row.cat-cs{border-left-color:var(--rose);}
+.row.cat-ops{border-left-color:var(--navy);}
+.cb{margin-top:2px;width:19px;height:19px;flex:none;cursor:pointer;accent-color:var(--green);}
+.rmain{flex:1;min-width:0;}
+.name{font-weight:bold;font-size:14px;line-height:1.35;}
+.meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;align-items:center;}
+.badge{font-size:11px;padding:2px 8px;border-radius:20px;color:#fff;white-space:nowrap;}
+.b-prod{background:var(--blue);}.b-mkt{background:var(--gold);}.b-cs{background:var(--rose);}.b-ops{background:var(--navy);}
+.owner{font-size:12px;color:var(--navy);background:#EEF3F8;border-radius:20px;padding:2px 9px;}
+.date{font-size:12px;color:var(--mute);}
+.date.warn{color:var(--red);font-weight:bold;}
+.date.amber{color:var(--amber);font-weight:bold;}
+.pill{font-size:11px;padding:2px 8px;border-radius:5px;background:#EDEDED;color:#555;}
+.pill.hold{background:#DCD3C0;color:#5b4b2a;}.pill.tbd{background:#F0E8E0;color:#7a5c2a;}
+.note{font-size:11.5px;color:var(--mute);margin-top:4px;}
+.editbtn{border:1px solid var(--line);background:#fff;color:var(--mute);cursor:pointer;font-size:11.5px;padding:4px 8px;border-radius:7px;flex:none;align-self:center;}
+.editbtn:hover{color:var(--navy);border-color:var(--navy);}
+.empty{color:var(--mute);text-align:center;padding:30px;}
+.gantt{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:#fff;}
+.ginner{min-width:1060px;}
+.grow{display:grid;grid-template-columns:262px repeat(20,1fr);}
+.gname{position:sticky;left:0;background:#fff;z-index:2;padding:7px 10px;border-right:1px solid var(--line);border-bottom:1px solid #EEF1F4;display:flex;flex-direction:column;gap:2px;}
+.gname b{font-weight:bold;color:var(--ink);font-size:12px;line-height:1.25;}
+.gname span{color:var(--mute);font-size:10.5px;}
+.gcell{border-right:1px solid #EEF1F4;border-bottom:1px solid #EEF1F4;min-height:33px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--rose);font-weight:bold;}
+.gh{background:var(--navy);color:#fff;font-size:9.5px;text-align:center;font-weight:bold;line-height:1.15;padding:5px 0;position:sticky;top:0;z-index:3;}
+.gname.gh{z-index:4;justify-content:center;font-size:11.5px;}
+.gcat{color:#fff;font-weight:bold;padding:5px 11px;font-size:12.5px;grid-column:1/-1;}
+.gtoday{box-shadow:inset 2px 0 0 0 #C0392B;}
+.gnote{font-size:11.5px;color:var(--mute);padding:9px 4px 0;}
+footer{margin-top:24px;color:var(--mute);font-size:11.5px;border-top:1px solid var(--line);padding-top:12px;}
+.legend{display:flex;gap:16px;flex-wrap:wrap;}
+.legend span{display:inline-flex;align-items:center;gap:5px;}
+.dot{width:11px;height:11px;border-radius:3px;display:inline-block;}
+button.mini{border:1px solid var(--line);background:#fff;border-radius:7px;padding:6px 10px;font-size:12px;cursor:pointer;color:var(--navy);}
+button.mini.accent{background:var(--gold);color:#fff;border-color:var(--gold);}
+.modal{position:fixed;inset:0;background:rgba(20,30,45,.45);display:flex;align-items:center;justify-content:center;z-index:50;}
+.modal.hidden{display:none;}
+.mbox{background:#fff;border-radius:12px;padding:20px 22px;width:min(520px,92vw);max-height:90vh;overflow:auto;box-shadow:0 10px 40px rgba(0,0,0,.3);}
+.mbox h3{margin:0 0 14px;color:var(--navy);}
+.mbox label{display:block;font-size:12px;color:var(--mute);margin-bottom:11px;}
+.mbox input,.mbox select,.mbox textarea{width:100%;margin-top:4px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-family:inherit;font-size:13px;color:var(--ink);}
+.mbox textarea{min-height:50px;resize:vertical;}
+.mrow{display:flex;gap:12px;}.mrow label{flex:1;}
+.mbtns{display:flex;gap:8px;align-items:center;margin-top:6px;}
+.mini.save{background:var(--navy);color:#fff;border-color:var(--navy);}
+.mini.del{background:#fff;color:var(--red);border-color:#E6B0AA;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>税理士ワークシフトサロン｜管理ダッシュボード</h1>
+      <div class="sub">プロジェクト管理ガントチャート v3 連動 ／ 完了チェック・編集はこのブラウザに保存されます</div>
+    </div>
+    <div class="today" id="today"></div>
+  </header>
+
+  <div class="chips" id="chips"></div>
+  <div class="alarm hidden" id="alarm"><span id="alarmText"></span><button class="go" id="alarmGo">遅延を表示 ▸</button></div>
+
+  <div class="controls">
+    <div class="views" id="views">
+      <button class="vbtn active" data-v="project">プロジェクト別</button>
+      <button class="vbtn" data-v="owner">担当者別</button>
+      <button class="vbtn" data-v="day">日別</button>
+      <button class="vbtn" data-v="month">月別</button>
+      <button class="vbtn" data-v="all">全タスク</button>
+      <button class="vbtn" data-v="gantt">ガント（全体）</button>
+    </div>
+    <span class="spacer"></span>
+    <select id="ownerFilter"><option value="">担当者：すべて</option></select>
+    <input type="search" id="search" placeholder="タスク検索…">
+    <label class="toggle"><input type="checkbox" id="hideDone"> 完了を隠す</label>
+    <label class="toggle"><input type="checkbox" id="overdueOnly"> 遅延のみ</label>
+  </div>
+  <div class="controls" style="margin-top:-4px">
+    <button class="mini accent" id="addBtn">＋ タスク追加</button>
+    <button class="mini" id="exportBtn">変更を書き出し(JSON)</button>
+    <button class="mini" id="copyBtn">変更をコピー</button>
+    <button class="mini" id="editResetBtn">編集を破棄</button>
+    <span class="spacer"></span>
+    <button class="mini" id="printBtn">印刷</button>
+    <button class="mini" id="resetBtn">チェック全解除</button>
+  </div>
+
+  <div class="subtabs hidden" id="subtabs"></div>
+  <div id="board"></div>
+
+  <footer>
+    <div class="legend">
+      <span><span class="dot" style="background:#4A6FA5"></span>プロダクト</span>
+      <span><span class="dot" style="background:#A88B47"></span>マーケティング</span>
+      <span><span class="dot" style="background:#A85569"></span>カスタマーサクセス</span>
+      <span><span class="dot" style="background:#1F2D3D"></span>オペレーション</span>
+      <span><span class="dot" style="background:#FDEDEC;border:1px solid #E6B0AA"></span>遅延</span>
+      <span><span class="dot" style="background:#FEF6E7;border:1px solid #F0D090"></span>3日以内</span>
+    </div>
+    <div style="margin-top:6px">各行の「✏️編集」で内容・期限を修正、「＋タスク追加」で新規追加できます。編集はこのブラウザに保存されます。ガント本体(xlsx)へ反映したい時は「変更をコピー」してご連絡ください。</div>
+  </footer>
+</div>
+
+<div class="modal hidden" id="modal"><div class="mbox">
+  <h3 id="mtitle">タスク編集</h3>
+  <label>タスク名<textarea id="m_name"></textarea></label>
+  <label>担当<input id="m_owner" placeholder="例：倉岡・石井"></label>
+  <div class="mrow">
+    <label>カテゴリ<select id="m_cat"><option value="prod">プロダクト</option><option value="mkt">マーケティング・新規獲得</option><option value="cs">カスタマーサクセス</option><option value="ops">オペレーション</option></select></label>
+    <label>種別<select id="m_status"><option value="active">期日あり</option><option value="保留">保留</option><option value="TBD">TBD</option></select></label>
+  </div>
+  <div class="mrow">
+    <label>開始日<input type="date" id="m_start"></label>
+    <label>期限<input type="date" id="m_due"></label>
+  </div>
+  <label>備考<input id="m_note"></label>
+  <div class="mbtns">
+    <button class="mini del" id="m_delete">削除</button>
+    <span class="spacer"></span>
+    <button class="mini" id="m_cancel">キャンセル</button>
+    <button class="mini save" id="m_save">保存</button>
+  </div>
+</div></div>
+
+<script>
+const DATA={"generated": "2026-06-30", "items": [{"id": 0, "cat": "prod", "name": "ポータルサイト：プレローンチ準備", "owner": "石井", "note": "", "start": "2026-06-15", "due": "2026-06-21", "status": "active", "kind": "span"}, {"id": 1, "cat": "prod", "name": "ポータルサイト：プレローンチ（既存会員開放）", "owner": "石井", "note": "", "start": "2026-06-22", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 2, "cat": "prod", "name": "ポータルサイト：正式ローンチ準備〜公開", "owner": "石井", "note": "", "start": "2026-06-22", "due": "2026-07-05", "status": "active", "kind": "span"}, {"id": 3, "cat": "prod", "name": "AI クエスト：初級コンテンツ精度向上・エラー修正（優先）", "owner": "石井（AIX依頼）", "note": "★6/18決定：ベータ版扱い／初級優先", "start": "2026-06-15", "due": "2026-07-05", "status": "active", "kind": "span"}, {"id": 4, "cat": "prod", "name": "AI クエスト：中級以降 順次拡充", "owner": "石井（AIX依頼）", "note": "ベータ版継続", "start": "2026-07-06", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 5, "cat": "prod", "name": "AI インフラ：ベース整備", "owner": "石井", "note": "基本部分は既に整備済", "start": "2026-06-15", "due": "2026-07-05", "status": "active", "kind": "span"}, {"id": 6, "cat": "prod", "name": "AI インフラ：拡充（順次）", "owner": "石井", "note": "毛受先生月2回打合せに基づく拡充", "start": "2026-06-22", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 7, "cat": "prod", "name": "AI インフラ：岡松先生 単発打合せ", "owner": "倉岡", "note": "AIX関連は基本AIXチームへ", "start": "2026-06-22", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 8, "cat": "prod", "name": "Infographics：既存整理〜順次拡充", "owner": "石井", "note": "公式 LINE で活用", "start": "2026-06-15", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 9, "cat": "prod", "name": "現行 AI 必殺仕訳人：継続運用", "owner": "情シス", "note": "新ツール準備完了まで現行維持", "start": "2026-06-15", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 10, "cat": "prod", "name": "新 AI 必殺仕訳人ツール：固定プロダクトキー方式 準備", "owner": "情シス", "note": "★6/18決定：保留／無料無制限設定が必要／佐藤さんから準備完了後アナウンス", "start": null, "due": null, "status": "保留", "kind": "span"}, {"id": 11, "cat": "prod", "name": "新ポータルAIナレッジ 成果物ファースト再構成（業務別）", "owner": "石井", "note": "記帳/経費/顧問先/相続税で再編・入会ガイドにAIフロー図", "start": "2026-06-29", "due": "2026-07-19", "status": "active", "kind": "span"}, {"id": 12, "cat": "prod", "name": "インフォグラフィック LINE配信 自動連携 仕組み化", "owner": "石井", "note": "現状手動アップ", "start": "2026-07-06", "due": "2026-08-09", "status": "active", "kind": "span"}, {"id": 13, "cat": "prod", "name": "bot（確定申告支援等）導入検討", "owner": "石井", "note": "★6/30:毛受先生相談のうえ判断・今年中", "start": null, "due": null, "status": "TBD", "kind": "span"}, {"id": 14, "cat": "prod", "name": "顧問先連携ツール「作り方」セミナー化", "owner": "倉岡・星野", "note": "★6/30:毛受先生相談・Q4以降・先生が自作できる形", "start": null, "due": null, "status": "TBD", "kind": "span"}, {"id": 15, "cat": "prod", "name": "木下先生 打合せ：相続税関係AIツール ブラッシュアップ", "owner": "倉岡・石井", "note": "★木下先生 相談：使い勝手向上・今月中（〜7/31）に開催調整", "start": "2026-07-27", "due": "2026-08-02", "status": "active", "kind": "span"}, {"id": 16, "cat": "mkt", "name": "LP 制作", "owner": "倉岡（清水）", "note": "清水さんは外注", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 17, "cat": "mkt", "name": "木下先生 公式 LINE 発信", "owner": "倉岡（清水）", "note": "LP 完成後 継続", "start": "2026-06-22", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 18, "cat": "mkt", "name": "Facebook 試験広告", "owner": "倉岡（清水）", "note": "LP 完成後 継続", "start": "2026-06-22", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 19, "cat": "mkt", "name": "入会フォロー体制 整備", "owner": "倉岡・石井", "note": "7/1 から 非参加者の入会受付開始", "start": "2026-06-15", "due": "2026-07-05", "status": "active", "kind": "span"}, {"id": 20, "cat": "mkt", "name": "アーカイブ紹介セット", "owner": "石井", "note": "", "start": "2026-06-15", "due": "2026-07-05", "status": "active", "kind": "span"}, {"id": 21, "cat": "mkt", "name": "説明会 非参加者誘導・お土産コンテンツ", "owner": "石井", "note": "業務効率化 体験コンテンツ", "start": "2026-06-29", "due": "2026-07-26", "status": "active", "kind": "span"}, {"id": 22, "cat": "mkt", "name": "説明会後 フロー整備", "owner": "倉岡・石井", "note": "", "start": "2026-07-06", "due": "2026-07-19", "status": "active", "kind": "span"}, {"id": 23, "cat": "mkt", "name": "第 1 回 体験説明会（運営）", "owner": "倉岡（SP：木下・佐藤）", "note": "", "start": "2026-07-20", "due": "2026-07-26", "status": "active", "kind": "span"}, {"id": 24, "cat": "mkt", "name": "第 2 回 体験説明会（運営）", "owner": "倉岡（SP：木下・佐藤）", "note": "", "start": "2026-08-10", "due": "2026-08-16", "status": "active", "kind": "span"}, {"id": 25, "cat": "mkt", "name": "PR 動画", "owner": "TBD", "note": "優先順位 下げ・別途検討", "start": null, "due": null, "status": "TBD", "kind": "span"}, {"id": 26, "cat": "mkt", "name": "7/1 リブランド ローンチ動画 配信（木下・佐藤）", "owner": "倉岡", "note": "朝8時配信・編集ゆりかさん", "start": "2026-06-22", "due": "2026-07-01", "status": "active", "kind": "milestone"}, {"id": 27, "cat": "mkt", "name": "ROI可視化ショーケース（削減時間・単価向上）", "owner": "星野・倉岡", "note": "★6/30:効率化を実感できる形に・高価格正当化", "start": "2026-07-06", "due": "2026-08-09", "status": "active", "kind": "span"}, {"id": 28, "cat": "mkt", "name": "会員実例ライブラリ 構築（再現性・社会的証明）", "owner": "石井・倉岡", "note": "特待生TLDV分析を素材に", "start": "2026-07-06", "due": "2026-09-06", "status": "active", "kind": "span"}, {"id": 29, "cat": "cs", "name": "6/15 ワークシフト第 1 回 開催", "owner": "佐藤代表（運営：倉岡）", "note": "", "start": "2026-06-15", "due": "2026-06-15", "status": "active", "kind": "milestone"}, {"id": 30, "cat": "cs", "name": "第 1 回 フォロー（LINE 開設サポート・Infographics）", "owner": "石井・倉岡", "note": "公式 LINE 設定会も検討", "start": "2026-06-15", "due": "2026-07-12", "status": "active", "kind": "span"}, {"id": 31, "cat": "cs", "name": "7/21 公式LINE開設作業会（設定会）", "owner": "倉岡・石井", "note": "公式LINE開設作業会 7/21(月)18:00-19:00", "start": "2026-06-22", "due": "2026-07-21", "status": "active", "kind": "milestone"}, {"id": 32, "cat": "cs", "name": "7/7 AI 実演セミナー 内容確定（1 週間前）", "owner": "星野", "note": "", "start": "2026-06-29", "due": "2026-07-07", "status": "active", "kind": "milestone"}, {"id": 33, "cat": "cs", "name": "7/7 AI 実演セミナー 開催", "owner": "星野", "note": "", "start": "2026-07-06", "due": "2026-07-07", "status": "active", "kind": "milestone"}, {"id": 34, "cat": "cs", "name": "7/28 ワークシフト第 2 回 コンテンツ設計", "owner": "今岡（外部講師）", "note": "★6/18決定：LINE 活用 ＋ 顧問先提案 ＋ AIX 提案 を強化／佐藤さん経由で直接調整", "start": "2026-06-29", "due": "2026-07-28", "status": "active", "kind": "span"}, {"id": 35, "cat": "cs", "name": "7/28 ワークシフト第 2 回 開催", "owner": "今岡（外部講師）", "note": "", "start": "2026-07-27", "due": "2026-07-28", "status": "active", "kind": "milestone"}, {"id": 36, "cat": "cs", "name": "第 3 回以降 ワークシフト講座 企画", "owner": "倉岡・木下先生", "note": "★6/18決定：税理士WSチーム＋木下先生で順次企画", "start": "2026-07-13", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 37, "cat": "cs", "name": "8〜10 月 月次セミナー スケジュール 決定", "owner": "倉岡", "note": "ワークシフト＋AI実演 各月1回", "start": "2026-06-15", "due": "2026-07-05", "status": "active", "kind": "span"}, {"id": 38, "cat": "cs", "name": "8 月 月次セミナー（ワークシフト＋AI）", "owner": "TBD", "note": "8月中 各1回", "start": "2026-08-03", "due": "2026-09-06", "status": "active", "kind": "span"}, {"id": 39, "cat": "cs", "name": "9 月 月次セミナー（ワークシフト＋AI）", "owner": "TBD", "note": "9月中 各1回", "start": "2026-09-07", "due": "2026-10-04", "status": "active", "kind": "span"}, {"id": 40, "cat": "cs", "name": "10 月 月次セミナー（ワークシフト＋AI）", "owner": "TBD", "note": "10月中 各1回", "start": "2026-10-05", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 41, "cat": "cs", "name": "毛受先生 月 2 回 打合せ（座談会）", "owner": "倉岡・石井", "note": "サロン運用助言／第2回ワークシフト追加ニーズヒアリング", "start": "2026-06-29", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 42, "cat": "cs", "name": "AI 雑談会（月 1 回）", "owner": "倉岡・星野", "note": "", "start": "2026-07-06", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 43, "cat": "cs", "name": "7/13 フォローアップ会（AI実用セミナー フォロー）", "owner": "石井・前田", "note": "7/7 AI実用セミナーのフォロー／7/13(月)18:00-19:30・以降不定期", "start": "2026-07-06", "due": "2026-07-13", "status": "active", "kind": "milestone"}, {"id": 44, "cat": "cs", "name": "オフ会 日程確定", "owner": "倉岡", "note": "9 or 10月・東京", "start": "2026-06-15", "due": "2026-06-21", "status": "active", "kind": "span"}, {"id": 45, "cat": "cs", "name": "オフ会 準備（会場・運営・告知）", "owner": "倉岡・石井", "note": "予算 50万円 / 会費制", "start": "2026-07-20", "due": "2026-10-18", "status": "active", "kind": "span"}, {"id": 46, "cat": "cs", "name": "セミナー成果物ファースト転換（完成形→作り方）", "owner": "星野", "note": "★6/23岡松ヒアリング・6/30採用・7/7から新構成", "start": "2026-06-29", "due": "2026-07-19", "status": "active", "kind": "span"}, {"id": 47, "cat": "cs", "name": "業務別AI活用事例集「仕事マップ」拡充", "owner": "石井・星野", "note": "事例マップ基盤・継続収集", "start": "2026-06-29", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 48, "cat": "cs", "name": "特待生 面談録画(TLDV) AI分析→業務効率化事例 抽出", "owner": "石井（担当:角田さん等）", "note": "会員実例ライブラリの素材・AI知識ある担当へ", "start": "2026-06-29", "due": "2026-07-26", "status": "active", "kind": "span"}, {"id": 49, "cat": "cs", "name": "AI座談会 定例化（月1・会員向け）", "owner": "倉岡・星野", "note": "★6/30:7/2第1回（毛受/星野）・毛受先生OK", "start": "2026-06-29", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 50, "cat": "cs", "name": "事前アンケート/設問刷新（具体業務を引き出す）", "owner": "石井・倉岡", "note": "座談会と統合・次回から", "start": "2026-06-29", "due": "2026-07-12", "status": "active", "kind": "span"}, {"id": 51, "cat": "cs", "name": "個別レクチャー 運用（木下・岡松・毛受）", "owner": "星野", "note": "7/4木下初回・月1〜2回・運営の税務理解向上も", "start": "2026-06-29", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 52, "cat": "cs", "name": "新規・初級者向け オンボーディング会（月2回想定）", "owner": "佐々木", "note": "★6/30:置いてけぼり対策・人数次第", "start": "2026-07-06", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 53, "cat": "cs", "name": "岡松先生 定期意見聴取（同意済）", "owner": "倉岡", "note": "6/29同意・個別レクチャーと連動", "start": "2026-06-29", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 54, "cat": "cs", "name": "他社AI事例集・書籍 継続リサーチ＆アレンジ", "owner": "石井・星野", "note": "大野氏書籍等・最新性維持", "start": "2026-06-29", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 55, "cat": "cs", "name": "AI化判断 相談窓口・ボット化", "owner": "石井・星野", "note": "★6/30保留:ChatLLMと差別化薄/裏で把握目的は別途検討", "start": null, "due": null, "status": "保留", "kind": "span"}, {"id": 56, "cat": "cs", "name": "競合AI研究会 セミナー調査", "owner": "星野", "note": "★6/30:継続検討・Q3", "start": null, "due": null, "status": "TBD", "kind": "span"}, {"id": 57, "cat": "cs", "name": "毛受先生 月次定例 打合せ（毎月10日ベース）（7/10）", "owner": "倉岡・石井", "note": "毎月10日ベース：7/10・8/10・9/10・10/10（初回16-17時・8月以降は仮/確定次第調整）", "start": "2026-07-10", "due": "2026-07-10", "status": "active", "kind": "milestone"}, {"id": 58, "cat": "cs", "name": "毛受先生 月次定例 打合せ（毎月10日ベース）（8/10）", "owner": "倉岡・石井", "note": "毎月10日ベース：7/10・8/10・9/10・10/10（初回16-17時・8月以降は仮/確定次第調整）", "start": "2026-08-10", "due": "2026-08-10", "status": "active", "kind": "milestone"}, {"id": 59, "cat": "cs", "name": "毛受先生 月次定例 打合せ（毎月10日ベース）（9/10）", "owner": "倉岡・石井", "note": "毎月10日ベース：7/10・8/10・9/10・10/10（初回16-17時・8月以降は仮/確定次第調整）", "start": "2026-09-10", "due": "2026-09-10", "status": "active", "kind": "milestone"}, {"id": 60, "cat": "cs", "name": "毛受先生 月次定例 打合せ（毎月10日ベース）（10/10）", "owner": "倉岡・石井", "note": "毎月10日ベース：7/10・8/10・9/10・10/10（初回16-17時・8月以降は仮/確定次第調整）", "start": "2026-10-10", "due": "2026-10-10", "status": "active", "kind": "milestone"}, {"id": 61, "cat": "ops", "name": "AI 研修商品 販売の仕組み 確定", "owner": "倉岡", "note": "来週から動ける状態に", "start": "2026-06-15", "due": "2026-06-21", "status": "active", "kind": "span"}, {"id": 62, "cat": "ops", "name": "AI 研修商品 販売 運用開始", "owner": "倉岡・石井", "note": "", "start": "2026-06-22", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 63, "cat": "ops", "name": "コンサルティングサービス商品 設計", "owner": "倉岡", "note": "★6/18決定：AIツール販売ではなくコンサル販売／導入支援・カスタマイズ・設定代行", "start": "2026-06-15", "due": "2026-07-12", "status": "active", "kind": "span"}, {"id": 64, "cat": "ops", "name": "コンサルティングサービス 提供開始", "owner": "倉岡・石井", "note": "保守・サポート負荷を抑え 個別ニーズに対応", "start": "2026-07-13", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 65, "cat": "ops", "name": "チケット制コンサル 詳細設計（90分/¥10,000・売上50%-50%）", "owner": "石井", "note": "★6/30:90分¥10,000・1年期限・都度/まとめ売り(6枚)・事前ヒアリングシート", "start": "2026-06-15", "due": "2026-07-05", "status": "active", "kind": "span"}, {"id": 66, "cat": "ops", "name": "チケット制コンサル 販売開始", "owner": "倉岡・石井", "note": "まとめ売り(6枚)・有効期限1年・名称=個別コンサル", "start": "2026-06-29", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 67, "cat": "ops", "name": "事務所アカウント追加制度 ローンチ準備", "owner": "石井", "note": "★6/18決定：同事業所追加 ¥3,000/名／基本会費 ¥30,000 + ¥3,000×N", "start": "2026-06-15", "due": "2026-07-05", "status": "active", "kind": "span"}, {"id": 68, "cat": "ops", "name": "事務所アカウント追加制度 運用開始", "owner": "倉岡・石井", "note": "特待生終了後の移行対策", "start": "2026-07-06", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 69, "cat": "ops", "name": "Zoom：バーチャル背景 ＋ プロフィールアイコン（全スタッフ分）", "owner": "倉岡（全スタッフ調整）", "note": "石井 がデザイン書き出し → 全員に配布 → 各自設定", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 70, "cat": "ops", "name": "Slack：ワークスペースアイコン ＋ サイドバーロゴ ＋ カスタム絵文字", "owner": "石井", "note": "ワークスペース管理者作業", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 71, "cat": "ops", "name": "LINE オープンチャット：アイコン ＋ カバー画像 ＋ ノート画像", "owner": "倉岡", "note": "", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 72, "cat": "ops", "name": "メール署名（テキストのみ）：屋号・URL・SNS リンク等の表記更新（全スタッフ分）", "owner": "倉岡（全スタッフ調整）", "note": "テンプレ配布 → 各自更新", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 73, "cat": "ops", "name": "YouTube：チャンネルアイコン ＋ バナー ＋ イントロ/アウトロ ＋ サムネテンプレ ＋ ウォーターマーク", "owner": "石井", "note": "動画素材含む", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 74, "cat": "ops", "name": "管理側 Notion：ワークスペースロゴ ＋ トップページ画像 ＋ テンプレート類のロゴ", "owner": "倉岡", "note": "管理側／チーム用 Notion", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 75, "cat": "ops", "name": "Google ドライブ 共有フォルダ アイコン（カスタム可能なもの）", "owner": "倉岡", "note": "", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 76, "cat": "ops", "name": "Google ビジネスプロフィール（登録があれば）", "owner": "倉岡", "note": "登録 未確認 → まず存在確認", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 77, "cat": "ops", "name": "会員管理システム内のロゴ表示", "owner": "石井", "note": "", "start": "2026-06-15", "due": "2026-06-28", "status": "active", "kind": "span"}, {"id": 78, "cat": "ops", "name": "AIX 連携：報酬ラダー 整備", "owner": "倉岡 ＋ 大野さん", "note": "別枠予算 / AIX チーム連携", "start": "2026-06-15", "due": "2026-07-12", "status": "active", "kind": "span"}, {"id": 79, "cat": "ops", "name": "AIX 連携：専門チーム連携フロー 構築", "owner": "倉岡 ＋ 大野さん", "note": "別枠予算", "start": "2026-06-15", "due": "2026-07-19", "status": "active", "kind": "span"}, {"id": 80, "cat": "ops", "name": "AIX 連携：販促資料 ・ 販促ツール 整備", "owner": "倉岡 ＋ 大野さん", "note": "別枠予算", "start": "2026-06-22", "due": "2026-08-09", "status": "active", "kind": "span"}, {"id": 81, "cat": "ops", "name": "岡松先生案件 AIX 研修 大野さんへプッシュ", "owner": "倉岡 → 大野さん", "note": "★6/18決定：AIX関連は基本AIXチーム対応", "start": "2026-06-15", "due": "2026-07-12", "status": "active", "kind": "span"}, {"id": 82, "cat": "ops", "name": "個別レクチャー枠 制度化（90分/¥10,000）", "owner": "星野", "note": "★6/30:個別コンサル廃止の救済措置・佐藤OK・事前ヒアリングシート", "start": "2026-06-29", "due": "2026-07-12", "status": "active", "kind": "span"}, {"id": 83, "cat": "ops", "name": "監修メンバー拡充（毛受・岡松ら税理士専門家）", "owner": "倉岡・木下", "note": "★SWOT/6-30:監修体制強化", "start": "2026-07-06", "due": "2026-09-06", "status": "active", "kind": "span"}, {"id": 84, "cat": "ops", "name": "KACHIEL等 外部税務専門家 連携模索", "owner": "倉岡・木下", "note": "★6/30:競合視せず協業・木下ネットワーク", "start": "2026-07-20", "due": "2026-11-01", "status": "active", "kind": "span"}, {"id": 85, "cat": "ops", "name": "インフラ運用担当 確保（永瀬潤さんに打診）", "owner": "倉岡", "note": "会計コンサル・税理士対応経験", "start": "2026-06-29", "due": "2026-07-19", "status": "active", "kind": "span"}, {"id": 86, "cat": "ops", "name": "事務局Notion/コンテンツDB 整理（CSV→AI整理）", "owner": "石井", "note": "項目精査・全体整理", "start": "2026-06-29", "due": "2026-07-26", "status": "active", "kind": "span"}, {"id": 87, "cat": "ops", "name": "OEM(AI GPT)提案 評価（クロスオペレーショングループ）", "owner": "倉岡・佐藤・星野", "note": "★6/30見送り寄り:GPTsベースで価値薄", "start": null, "due": null, "status": "保留", "kind": "span"}, {"id": 88, "cat": "ops", "name": "月次 収支集計（毎月5日 完了）（7/5）", "owner": "倉岡・石井", "note": "管理ルーティン：7/5・8/5・9/5・10/5", "start": "2026-07-05", "due": "2026-07-05", "status": "active", "kind": "milestone"}, {"id": 89, "cat": "ops", "name": "月次 収支集計（毎月5日 完了）（8/5）", "owner": "倉岡・石井", "note": "管理ルーティン：7/5・8/5・9/5・10/5", "start": "2026-08-05", "due": "2026-08-05", "status": "active", "kind": "milestone"}, {"id": 90, "cat": "ops", "name": "月次 収支集計（毎月5日 完了）（9/5）", "owner": "倉岡・石井", "note": "管理ルーティン：7/5・8/5・9/5・10/5", "start": "2026-09-05", "due": "2026-09-05", "status": "active", "kind": "milestone"}, {"id": 91, "cat": "ops", "name": "月次 収支集計（毎月5日 完了）（10/5）", "owner": "倉岡・石井", "note": "管理ルーティン：7/5・8/5・9/5・10/5", "start": "2026-10-05", "due": "2026-10-05", "status": "active", "kind": "milestone"}, {"id": 92, "cat": "ops", "name": "月次 レポート作成→木下先生 提出（毎月6日）（7/6）", "owner": "倉岡・石井", "note": "管理ルーティン：7/6・8/6・9/6・10/6", "start": "2026-07-06", "due": "2026-07-06", "status": "active", "kind": "milestone"}, {"id": 93, "cat": "ops", "name": "月次 レポート作成→木下先生 提出（毎月6日）（8/6）", "owner": "倉岡・石井", "note": "管理ルーティン：7/6・8/6・9/6・10/6", "start": "2026-08-06", "due": "2026-08-06", "status": "active", "kind": "milestone"}, {"id": 94, "cat": "ops", "name": "月次 レポート作成→木下先生 提出（毎月6日）（9/6）", "owner": "倉岡・石井", "note": "管理ルーティン：7/6・8/6・9/6・10/6", "start": "2026-09-06", "due": "2026-09-06", "status": "active", "kind": "milestone"}, {"id": 95, "cat": "ops", "name": "月次 レポート作成→木下先生 提出（毎月6日）（10/6）", "owner": "倉岡・石井", "note": "管理ルーティン：7/6・8/6・9/6・10/6", "start": "2026-10-06", "due": "2026-10-06", "status": "active", "kind": "milestone"}, {"id": 96, "cat": "ops", "name": "月次 請求書 発行（毎月10日）（7/10）", "owner": "倉岡・石井", "note": "管理ルーティン：7/10・8/10・9/10・10/10", "start": "2026-07-10", "due": "2026-07-10", "status": "active", "kind": "milestone"}, {"id": 97, "cat": "ops", "name": "月次 請求書 発行（毎月10日）（8/10）", "owner": "倉岡・石井", "note": "管理ルーティン：7/10・8/10・9/10・10/10", "start": "2026-08-10", "due": "2026-08-10", "status": "active", "kind": "milestone"}, {"id": 98, "cat": "ops", "name": "月次 請求書 発行（毎月10日）（9/10）", "owner": "倉岡・石井", "note": "管理ルーティン：7/10・8/10・9/10・10/10", "start": "2026-09-10", "due": "2026-09-10", "status": "active", "kind": "milestone"}, {"id": 99, "cat": "ops", "name": "月次 請求書 発行（毎月10日）（10/10）", "owner": "倉岡・石井", "note": "管理ルーティン：7/10・8/10・9/10・10/10", "start": "2026-10-10", "due": "2026-10-10", "status": "active", "kind": "milestone"}], "gantt": [{"cat": "prod", "name": "ポータルサイト：プレローンチ準備", "owner": "石井", "weeks": [1], "stars": [], "status": "active"}, {"cat": "prod", "name": "ポータルサイト：プレローンチ（既存会員開放）", "owner": "石井", "weeks": [2], "stars": [2], "status": "active"}, {"cat": "prod", "name": "ポータルサイト：正式ローンチ準備〜公開", "owner": "石井", "weeks": [2, 3], "stars": [3], "status": "active"}, {"cat": "prod", "name": "AI クエスト：初級コンテンツ精度向上・エラー修正（優先）", "owner": "石井（AIX依頼）", "weeks": [1, 2, 3], "stars": [3], "status": "active"}, {"cat": "prod", "name": "AI クエスト：中級以降 順次拡充", "owner": "石井（AIX依頼）", "weeks": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "prod", "name": "AI インフラ：ベース整備", "owner": "石井", "weeks": [1, 2, 3], "stars": [], "status": "active"}, {"cat": "prod", "name": "AI インフラ：拡充（順次）", "owner": "石井", "weeks": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "prod", "name": "AI インフラ：岡松先生 単発打合せ", "owner": "倉岡", "weeks": [2], "stars": [2], "status": "active"}, {"cat": "prod", "name": "Infographics：既存整理〜順次拡充", "owner": "石井", "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [3], "status": "active"}, {"cat": "prod", "name": "現行 AI 必殺仕訳人：継続運用", "owner": "情シス", "weeks": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "prod", "name": "新 AI 必殺仕訳人ツール：固定プロダクトキー方式 準備", "owner": "情シス", "weeks": [], "stars": [], "status": "保留"}, {"cat": "prod", "name": "新ポータルAIナレッジ 成果物ファースト再構成（業務別）", "owner": "石井", "weeks": [3, 4, 5], "stars": [3], "status": "active"}, {"cat": "prod", "name": "インフォグラフィック LINE配信 自動連携 仕組み化", "owner": "石井", "weeks": [4, 5, 6, 7, 8], "stars": [], "status": "active"}, {"cat": "prod", "name": "bot（確定申告支援等）導入検討", "owner": "石井", "weeks": [], "stars": [], "status": "TBD"}, {"cat": "prod", "name": "顧問先連携ツール「作り方」セミナー化", "owner": "倉岡・星野", "weeks": [], "stars": [], "status": "TBD"}, {"cat": "prod", "name": "木下先生 打合せ：相続税関係AIツール ブラッシュアップ", "owner": "倉岡・石井", "weeks": [7], "stars": [7], "status": "active"}, {"cat": "mkt", "name": "LP 制作", "owner": "倉岡（清水）", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "mkt", "name": "木下先生 公式 LINE 発信", "owner": "倉岡（清水）", "weeks": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "mkt", "name": "Facebook 試験広告", "owner": "倉岡（清水）", "weeks": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "mkt", "name": "入会フォロー体制 整備", "owner": "倉岡・石井", "weeks": [1, 2, 3], "stars": [3], "status": "active"}, {"cat": "mkt", "name": "アーカイブ紹介セット", "owner": "石井", "weeks": [1, 2, 3], "stars": [3], "status": "active"}, {"cat": "mkt", "name": "説明会 非参加者誘導・お土産コンテンツ", "owner": "石井", "weeks": [3, 4, 5, 6], "stars": [6], "status": "active"}, {"cat": "mkt", "name": "説明会後 フロー整備", "owner": "倉岡・石井", "weeks": [4, 5], "stars": [5], "status": "active"}, {"cat": "mkt", "name": "第 1 回 体験説明会（運営）", "owner": "倉岡（SP：木下・佐藤）", "weeks": [6], "stars": [6], "status": "active"}, {"cat": "mkt", "name": "第 2 回 体験説明会（運営）", "owner": "倉岡（SP：木下・佐藤）", "weeks": [9], "stars": [9], "status": "active"}, {"cat": "mkt", "name": "PR 動画", "owner": "TBD", "weeks": [], "stars": [], "status": "TBD"}, {"cat": "mkt", "name": "7/1 リブランド ローンチ動画 配信（木下・佐藤）", "owner": "倉岡", "weeks": [2, 3], "stars": [3], "status": "active"}, {"cat": "mkt", "name": "ROI可視化ショーケース（削減時間・単価向上）", "owner": "星野・倉岡", "weeks": [4, 5, 6, 7, 8], "stars": [], "status": "active"}, {"cat": "mkt", "name": "会員実例ライブラリ 構築（再現性・社会的証明）", "owner": "石井・倉岡", "weeks": [4, 5, 6, 7, 8, 9, 10, 11, 12], "stars": [], "status": "active"}, {"cat": "cs", "name": "6/15 ワークシフト第 1 回 開催", "owner": "佐藤代表（運営：倉岡）", "weeks": [1], "stars": [1], "status": "active"}, {"cat": "cs", "name": "第 1 回 フォロー（LINE 開設サポート・Infographics）", "owner": "石井・倉岡", "weeks": [1, 2, 3, 4], "stars": [], "status": "active"}, {"cat": "cs", "name": "7/21 公式LINE開設作業会（設定会）", "owner": "倉岡・石井", "weeks": [2, 3, 4, 5, 6], "stars": [6], "status": "active"}, {"cat": "cs", "name": "7/7 AI 実演セミナー 内容確定（1 週間前）", "owner": "星野", "weeks": [3], "stars": [3], "status": "active"}, {"cat": "cs", "name": "7/7 AI 実演セミナー 開催", "owner": "星野", "weeks": [4], "stars": [4], "status": "active"}, {"cat": "cs", "name": "7/28 ワークシフト第 2 回 コンテンツ設計", "owner": "今岡（外部講師）", "weeks": [3, 4, 5, 6], "stars": [], "status": "active"}, {"cat": "cs", "name": "7/28 ワークシフト第 2 回 開催", "owner": "今岡（外部講師）", "weeks": [7], "stars": [7], "status": "active"}, {"cat": "cs", "name": "第 3 回以降 ワークシフト講座 企画", "owner": "倉岡・木下先生", "weeks": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "cs", "name": "8〜10 月 月次セミナー スケジュール 決定", "owner": "倉岡", "weeks": [1, 2, 3], "stars": [3], "status": "active"}, {"cat": "cs", "name": "8 月 月次セミナー（ワークシフト＋AI）", "owner": "TBD", "weeks": [8, 9, 10, 11, 12], "stars": [], "status": "active"}, {"cat": "cs", "name": "9 月 月次セミナー（ワークシフト＋AI）", "owner": "TBD", "weeks": [13, 14, 15, 16], "stars": [], "status": "active"}, {"cat": "cs", "name": "10 月 月次セミナー（ワークシフト＋AI）", "owner": "TBD", "weeks": [17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "cs", "name": "毛受先生 月 2 回 打合せ（座談会）", "owner": "倉岡・石井", "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [3], "status": "active"}, {"cat": "cs", "name": "AI 雑談会（月 1 回）", "owner": "倉岡・星野", "weeks": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "cs", "name": "7/13 フォローアップ会（AI実用セミナー フォロー）", "owner": "石井・前田", "weeks": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [5], "status": "active"}, {"cat": "cs", "name": "オフ会 日程確定", "owner": "倉岡", "weeks": [1], "stars": [1], "status": "active"}, {"cat": "cs", "name": "オフ会 準備（会場・運営・告知）", "owner": "倉岡・石井", "weeks": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], "stars": [], "status": "active"}, {"cat": "cs", "name": "セミナー成果物ファースト転換（完成形→作り方）", "owner": "星野", "weeks": [3, 4, 5], "stars": [4], "status": "active"}, {"cat": "cs", "name": "業務別AI活用事例集「仕事マップ」拡充", "owner": "石井・星野", "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "cs", "name": "特待生 面談録画(TLDV) AI分析→業務効率化事例 抽出", "owner": "石井（担当:角田さん等）", "weeks": [3, 4, 5, 6], "stars": [], "status": "active"}, {"cat": "cs", "name": "AI座談会 定例化（月1・会員向け）", "owner": "倉岡・星野", "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [3], "status": "active"}, {"cat": "cs", "name": "事前アンケート/設問刷新（具体業務を引き出す）", "owner": "石井・倉岡", "weeks": [3, 4], "stars": [], "status": "active"}, {"cat": "cs", "name": "個別レクチャー 運用（木下・岡松・毛受）", "owner": "星野", "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [3], "status": "active"}, {"cat": "cs", "name": "新規・初級者向け オンボーディング会（月2回想定）", "owner": "佐々木", "weeks": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "cs", "name": "岡松先生 定期意見聴取（同意済）", "owner": "倉岡", "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "cs", "name": "他社AI事例集・書籍 継続リサーチ＆アレンジ", "owner": "石井・星野", "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "cs", "name": "AI化判断 相談窓口・ボット化", "owner": "石井・星野", "weeks": [], "stars": [], "status": "保留"}, {"cat": "cs", "name": "競合AI研究会 セミナー調査", "owner": "星野", "weeks": [], "stars": [], "status": "TBD"}, {"cat": "cs", "name": "毛受先生 月次定例 打合せ（毎月10日ベース）", "owner": "倉岡・石井", "weeks": [4, 9, 13, 17], "stars": [4, 9, 13, 17], "status": "active"}, {"cat": "ops", "name": "AI 研修商品 販売の仕組み 確定", "owner": "倉岡", "weeks": [1], "stars": [1], "status": "active"}, {"cat": "ops", "name": "AI 研修商品 販売 運用開始", "owner": "倉岡・石井", "weeks": [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "ops", "name": "コンサルティングサービス商品 設計", "owner": "倉岡", "weeks": [1, 2, 3, 4], "stars": [4], "status": "active"}, {"cat": "ops", "name": "コンサルティングサービス 提供開始", "owner": "倉岡・石井", "weeks": [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [5], "status": "active"}, {"cat": "ops", "name": "チケット制コンサル 詳細設計（90分/¥10,000・売上50%-50%）", "owner": "石井", "weeks": [1, 2, 3], "stars": [3], "status": "active"}, {"cat": "ops", "name": "チケット制コンサル 販売開始", "owner": "倉岡・石井", "weeks": [3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [3], "status": "active"}, {"cat": "ops", "name": "事務所アカウント追加制度 ローンチ準備", "owner": "石井", "weeks": [1, 2, 3], "stars": [3], "status": "active"}, {"cat": "ops", "name": "事務所アカウント追加制度 運用開始", "owner": "倉岡・石井", "weeks": [4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [4], "status": "active"}, {"cat": "ops", "name": "Zoom：バーチャル背景 ＋ プロフィールアイコン（全スタッフ分）", "owner": "倉岡（全スタッフ調整）", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "Slack：ワークスペースアイコン ＋ サイドバーロゴ ＋ カスタム絵文字", "owner": "石井", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "LINE オープンチャット：アイコン ＋ カバー画像 ＋ ノート画像", "owner": "倉岡", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "メール署名（テキストのみ）：屋号・URL・SNS リンク等の表記更新（全スタッフ分）", "owner": "倉岡（全スタッフ調整）", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "YouTube：チャンネルアイコン ＋ バナー ＋ イントロ/アウトロ ＋ サムネテンプレ ＋ ウォーターマーク", "owner": "石井", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "管理側 Notion：ワークスペースロゴ ＋ トップページ画像 ＋ テンプレート類のロゴ", "owner": "倉岡", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "Google ドライブ 共有フォルダ アイコン（カスタム可能なもの）", "owner": "倉岡", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "Google ビジネスプロフィール（登録があれば）", "owner": "倉岡", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "会員管理システム内のロゴ表示", "owner": "石井", "weeks": [1, 2], "stars": [2], "status": "active"}, {"cat": "ops", "name": "AIX 連携：報酬ラダー 整備", "owner": "倉岡 ＋ 大野さん", "weeks": [1, 2, 3, 4], "stars": [], "status": "active"}, {"cat": "ops", "name": "AIX 連携：専門チーム連携フロー 構築", "owner": "倉岡 ＋ 大野さん", "weeks": [1, 2, 3, 4, 5], "stars": [], "status": "active"}, {"cat": "ops", "name": "AIX 連携：販促資料 ・ 販促ツール 整備", "owner": "倉岡 ＋ 大野さん", "weeks": [2, 3, 4, 5, 6, 7, 8], "stars": [], "status": "active"}, {"cat": "ops", "name": "岡松先生案件 AIX 研修 大野さんへプッシュ", "owner": "倉岡 → 大野さん", "weeks": [1, 2, 3, 4], "stars": [], "status": "active"}, {"cat": "ops", "name": "個別レクチャー枠 制度化（90分/¥10,000）", "owner": "星野", "weeks": [3, 4], "stars": [4], "status": "active"}, {"cat": "ops", "name": "監修メンバー拡充（毛受・岡松ら税理士専門家）", "owner": "倉岡・木下", "weeks": [4, 5, 6, 7, 8, 9, 10, 11, 12], "stars": [], "status": "active"}, {"cat": "ops", "name": "KACHIEL等 外部税務専門家 連携模索", "owner": "倉岡・木下", "weeks": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20], "stars": [], "status": "active"}, {"cat": "ops", "name": "インフラ運用担当 確保（永瀬潤さんに打診）", "owner": "倉岡", "weeks": [3, 4, 5], "stars": [], "status": "active"}, {"cat": "ops", "name": "事務局Notion/コンテンツDB 整理（CSV→AI整理）", "owner": "石井", "weeks": [3, 4, 5, 6], "stars": [], "status": "active"}, {"cat": "ops", "name": "OEM(AI GPT)提案 評価（クロスオペレーショングループ）", "owner": "倉岡・佐藤・星野", "weeks": [], "stars": [], "status": "保留"}, {"cat": "ops", "name": "月次 収支集計（毎月5日 完了）", "owner": "倉岡・石井", "weeks": [3, 8, 12, 16], "stars": [3, 8, 12, 16], "status": "active"}, {"cat": "ops", "name": "月次 レポート作成→木下先生 提出（毎月6日）", "owner": "倉岡・石井", "weeks": [4, 8, 12, 17], "stars": [4, 8, 12, 17], "status": "active"}, {"cat": "ops", "name": "月次 請求書 発行（毎月10日）", "owner": "倉岡・石井", "weeks": [4, 9, 13, 17], "stars": [4, 9, 13, 17], "status": "active"}], "catName": {"prod": "プロダクト", "mkt": "マーケティング・新規獲得", "cs": "カスタマーサクセス", "ops": "オペレーション"}};
+const CATORDER=['prod','mkt','cs','ops'];
+const CATLABEL={prod:'プロダクト',mkt:'マーケティング・新規獲得',cs:'カスタマーサクセス',ops:'オペレーション'};
+const PEOPLE=['倉岡','石井','星野','佐々木','今岡','前田','清水','木下','佐藤','毛受','大野','永瀬','角田','情シス'];
+const LSKEY='wss_dash_done_v1', LSVIEW='wss_dash_view_v1', LSEDIT='wss_dash_edit_v1';
+let done=JSON.parse(localStorage.getItem(LSKEY)||'{}');
+let edits=JSON.parse(localStorage.getItem(LSEDIT)||'{"ov":{},"add":[],"del":[]}');
+let ITEMS=[];
+let state={view:localStorage.getItem(LSVIEW)||'project',sub:'all',owner:'',q:'',hideDone:false,overdueOnly:false};
+let editingId=null;
+
+const today=new Date(); today.setHours(0,0,0,0);
+function d(iso){if(!iso)return null;const p=iso.split('-');return new Date(+p[0],+p[1]-1,+p[2]);}
+function daysTo(iso){if(!iso)return null;return Math.round((d(iso)-today)/86400000);}
+function monthOf(iso){return +iso.slice(5,7);}
+function weekOf(iso){if(!iso)return null;const base=new Date(2026,5,15);base.setHours(0,0,0,0);let wi=Math.floor((d(iso)-base)/(7*86400000))+1;return Math.max(1,Math.min(20,wi));}
+function isOverdue(it){return it.status==='active'&&it.due&&!done[it.id]&&daysTo(it.due)<0;}
+function isSoon(it){if(it.status!=='active'||!it.due||done[it.id])return false;const n=daysTo(it.due);return n>=0&&n<=3;}
+const WD=['日','月','火','水','木','金','土'];
+function fmtD(iso){const x=d(iso);return (x.getMonth()+1)+'/'+x.getDate()+'('+WD[x.getDay()]+')';}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function catColor(c){return{prod:'#4A6FA5',mkt:'#A88B47',cs:'#A85569',ops:'#1F2D3D'}[c];}
+function catLight(c){return{prod:'#DCE5EC',mkt:'#F5EAD0',cs:'#F4DEE3',ops:'#E8EEF3'}[c];}
+
+function rebuildItems(){
+  const del=new Set((edits.del||[]).map(String));
+  ITEMS=DATA.items.filter(i=>!del.has(String(i.id))).map(i=>Object.assign({},i,edits.ov[String(i.id)]||{}));
+  (edits.add||[]).forEach(a=>{if(!del.has(String(a.id)))ITEMS.push(a);});
+}
+function saveEdits(){localStorage.setItem(LSEDIT,JSON.stringify(edits));}
+
+document.getElementById('today').textContent='本日 '+(today.getMonth()+1)+'/'+today.getDate()+'('+WD[today.getDay()]+')';
+const ownerSel=document.getElementById('ownerFilter');
+PEOPLE.forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent='担当：'+p;ownerSel.appendChild(o);});
+
+function monthsPresent(){const s=new Set(ITEMS.filter(i=>i.due).map(i=>monthOf(i.due)));return [...s].sort((a,b)=>a-b);}
+function renderSubtabs(){
+  const el=document.getElementById('subtabs');let pills=null,label='';
+  if(state.view==='project'||state.view==='day'||state.view==='gantt'){label='カテゴリ：';pills=[['all','全て']].concat(CATORDER.map(c=>[c,CATLABEL[c].replace('・新規獲得','')]));}
+  else if(state.view==='owner'){label='担当者：';pills=[['all','全て']].concat(PEOPLE.filter(p=>ITEMS.some(i=>i.owner.includes(p))).map(p=>[p,p]));}
+  else if(state.view==='month'){label='月：';pills=[['all','全て']].concat(monthsPresent().map(m=>[String(m),m+'月']));}
+  if(!pills){el.className='subtabs hidden';el.innerHTML='';return;}
+  el.className='subtabs';
+  el.innerHTML='<span class="lbl">'+label+'</span>'+pills.map(([k,l])=>'<button class="stab'+(String(state.sub)===String(k)?' active':'')+'" data-k="'+k+'">'+l+'</button>').join('');
+}
+function visible(){
+  return ITEMS.filter(it=>{
+    if(state.owner&&!it.owner.includes(state.owner))return false;
+    if(state.q&&!(it.name+it.owner+(it.note||'')).toLowerCase().includes(state.q.toLowerCase()))return false;
+    if(state.hideDone&&done[it.id])return false;
+    if(state.overdueOnly&&!isOverdue(it))return false;
+    if(state.view==='project'&&state.sub!=='all'&&it.cat!==state.sub)return false;
+    if(state.view==='day'&&state.sub!=='all'&&it.cat!==state.sub)return false;
+    if(state.view==='owner'&&state.sub!=='all'&&!it.owner.includes(state.sub))return false;
+    if(state.view==='month'&&state.sub!=='all'&&!(it.due&&monthOf(it.due)===+state.sub))return false;
+    return true;
+  });
+}
+function statusClass(it){if(done[it.id])return'done';if(isOverdue(it))return'overdue';if(isSoon(it))return'soon';return'';}
+function rowHTML(it){
+  const cls=['row','cat-'+it.cat,statusClass(it)].filter(Boolean).join(' ');
+  let dstr='';
+  if(it.status!=='active'){dstr='<span class="pill '+(it.status==='保留'?'hold':'tbd')+'">'+it.status+'</span>';}
+  else if(it.due){
+    const n=daysTo(it.due); let c='date',extra='';
+    if(!done[it.id]&&n<0){c='date warn';extra=' ⚠ '+(-n)+'日超過';}
+    else if(!done[it.id]&&n>=0&&n<=3){c='date amber';extra=' あと'+n+'日';}
+    const range=(it.kind==='span'&&it.start&&it.start!==it.due)?(fmtD(it.start)+' 〜 '+fmtD(it.due)):('期日 '+fmtD(it.due));
+    dstr='<span class="'+c+'">'+range+extra+'</span>';
+  }
+  const note=it.note?'<div class="note">'+esc(it.note)+'</div>':'';
+  return '<div class="'+cls+'" data-id="'+it.id+'">'
+   +'<input type="checkbox" class="cb" '+(done[it.id]?'checked':'')+' data-id="'+it.id+'">'
+   +'<div class="rmain"><div class="name">'+esc(it.name)+'</div>'
+   +'<div class="meta"><span class="badge b-'+it.cat+'">'+CATLABEL[it.cat].replace('・新規獲得','')+'</span>'
+   +'<span class="owner">'+esc(it.owner||'—')+'</span>'+dstr+'</div>'+note+'</div>'
+   +'<button class="editbtn" data-edit="'+it.id+'">✏️ 編集</button></div>';
+}
+function groupBlock(title,badgeHtml,arr){
+  const tot=arr.length, dn=arr.filter(i=>done[i.id]).length, pct=tot?Math.round(dn/tot*100):0;
+  return '<div class="group"><div class="ghead">'+(badgeHtml||'')+'<h2>'+esc(title)+'</h2>'
+   +'<span class="gcount">'+dn+' / '+tot+' 完了</span><div class="pbar"><i style="width:'+pct+'%"></i></div></div>'
+   +arr.map(rowHTML).join('')+'</div>';
+}
+function sortItems(a,b){const da=a.due?d(a.due).getTime():9e15,db=b.due?d(b.due).getTime():9e15;if(da!==db)return da-db;return CATORDER.indexOf(a.cat)-CATORDER.indexOf(b.cat);}
+function byDay(arr){
+  let html='';const dated=arr.filter(i=>i.due),nod=arr.filter(i=>!i.due),days={};
+  dated.forEach(i=>{(days[i.due]=days[i.due]||[]).push(i);});
+  Object.keys(days).sort().forEach(k=>{const bd=days[k].some(isOverdue)?'<span class="dot" style="background:#C0392B"></span>':'';html+=groupBlock(fmtD(k),bd,days[k]);});
+  if(nod.length)html+=groupBlock('継続・期日なし','',nod);
+  return html;
+}
+function weekMondays(){const base=new Date(2026,5,15);const a=[];for(let i=0;i<20;i++){const dt=new Date(base);dt.setDate(base.getDate()+7*i);a.push((dt.getMonth()+1)+'/'+dt.getDate());}return a;}
+function todayWeek(){const base=new Date(2026,5,15);base.setHours(0,0,0,0);return Math.floor((today-base)/(7*86400000))+1;}
+function renderGantt(){
+  const mons=weekMondays(), tw=todayWeek();
+  let g=ITEMS.filter(t=>{
+    if(state.owner&&!t.owner.includes(state.owner))return false;
+    if(state.q&&!(t.name+t.owner).toLowerCase().includes(state.q.toLowerCase()))return false;
+    if(state.sub!=='all'&&t.cat!==state.sub)return false;
+    return true;});
+  let h='<div class="gantt"><div class="ginner">';
+  h+='<div class="grow"><div class="gname gh">タスク / 担当</div>';
+  for(let w=1;w<=20;w++){h+='<div class="gcell gh'+(w===tw?' gtoday':'')+'">W'+w+'<br>'+mons[w-1]+'</div>';}
+  h+='</div>';
+  CATORDER.forEach(c=>{
+    const arr=g.filter(t=>t.cat===c).sort((a,b)=>(weekOf(a.due)||99)-(weekOf(b.due)||99));
+    if(!arr.length)return;
+    h+='<div class="grow"><div class="gcat" style="background:'+catColor(c)+'">'+CATLABEL[c]+'</div></div>';
+    arr.forEach(t=>{
+      const sW=weekOf(t.start||t.due), eW=weekOf(t.due);
+      const st=(t.status!=='active')?' <span class="pill '+(t.status==='保留'?'hold':'tbd')+'">'+t.status+'</span>':'';
+      h+='<div class="grow"><div class="gname"><b>'+esc(t.name)+st+'</b><span>'+esc(t.owner||'—')+'</span></div>';
+      for(let w=1;w<=20;w++){
+        const inbar=(sW&&eW&&w>=sW&&w<=eW), star=(eW&&w===eW&&t.kind==='milestone');
+        let cls='gcell'+(w===tw?' gtoday':''), style='', content='';
+        if(inbar||star)style=' style="background:'+catLight(c)+'"';
+        if(star)content='★';
+        h+='<div class="'+cls+'"'+style+'>'+content+'</div>';}
+      h+='</div>';});});
+  h+='</div></div><div class="gnote">赤い縦線＝今日（W'+tw+'）。塗り＝実施期間、★＝マイルストーン。編集した期限も反映されます。</div>';
+  return h;
+}
+function render(){
+  document.querySelectorAll('.vbtn').forEach(b=>b.classList.toggle('active',b.dataset.v===state.view));
+  renderSubtabs();
+  const board=document.getElementById('board');
+  if(state.view==='gantt'){board.innerHTML=renderGantt();updateChips();return;}
+  const its=visible().slice().sort(sortItems);
+  if(!its.length){board.innerHTML='<div class="empty">該当するタスクはありません。</div>';updateChips();return;}
+  let html='';
+  if(state.view==='project'){
+    if(state.sub==='all'){CATORDER.forEach(c=>{const arr=its.filter(i=>i.cat===c);if(arr.length)html+=groupBlock(CATLABEL[c],'<span class="dot" style="background:'+catColor(c)+'"></span>',arr);});}
+    else html+=groupBlock(CATLABEL[state.sub],'<span class="dot" style="background:'+catColor(state.sub)+'"></span>',its);
+  }else if(state.view==='owner'){
+    if(state.sub==='all'){
+      PEOPLE.forEach(p=>{const arr=its.filter(i=>i.owner.includes(p));if(arr.length)html+=groupBlock(p,'',arr);});
+      const other=its.filter(i=>!PEOPLE.some(p=>i.owner.includes(p)));if(other.length)html+=groupBlock('その他・未定','',other);
+    }else html+=groupBlock('担当：'+state.sub,'',its);
+  }else if(state.view==='day'){html+=byDay(its);
+  }else if(state.view==='month'){
+    if(state.sub==='all'){monthsPresent().forEach(m=>{const arr=its.filter(i=>i.due&&monthOf(i.due)===m);if(arr.length)html+=groupBlock(m+'月','<span class="dot" style="background:'+catColor('ops')+'"></span>',arr);});
+      const nod=its.filter(i=>!i.due);if(nod.length)html+=groupBlock('継続・期日なし','',nod);
+    }else html+=byDay(its);
+  }else html+=groupBlock('全タスク（期日順）','',its);
+  board.innerHTML=html;
+  updateChips();
+}
+function updateChips(){
+  const all=ITEMS, act=all.filter(i=>i.status==='active'), dn=act.filter(i=>done[i.id]).length;
+  const ov=all.filter(isOverdue).length, soon=all.filter(isSoon).length, hold=all.filter(i=>i.status!=='active').length;
+  document.getElementById('chips').innerHTML=
+   chip(act.length,'対象タスク','navy')+chip(dn,'完了','green')+chip(act.length-dn,'未完了','navy')
+   +chip(ov,'遅延','red')+chip(soon,'3日以内','amber')+chip(hold,'保留・TBD','navy');
+  const al=document.getElementById('alarm');
+  if(ov>0){al.classList.remove('hidden');document.getElementById('alarmText').textContent='⚠ 遅延タスクが '+ov+' 件あります（未完了・期限超過）';}
+  else al.classList.add('hidden');
+}
+function chip(n,l,c){return '<div class="chip '+c+'"><span class="n">'+n+'</span><span class="l">'+l+'</span></div>';}
+
+// ---- edit modal ----
+function openModal(id){
+  editingId=id; const it=id?ITEMS.find(x=>String(x.id)===String(id)):null;
+  document.getElementById('mtitle').textContent=id?'タスク編集':'タスク追加';
+  document.getElementById('m_name').value=it?it.name:'';
+  document.getElementById('m_owner').value=it?(it.owner||''):'';
+  document.getElementById('m_cat').value=it?it.cat:'ops';
+  document.getElementById('m_status').value=it?it.status:'active';
+  document.getElementById('m_start').value=it&&it.start?it.start:'';
+  document.getElementById('m_due').value=it&&it.due?it.due:'';
+  document.getElementById('m_note').value=it?(it.note||''):'';
+  document.getElementById('m_delete').style.display=id?'':'none';
+  document.getElementById('modal').classList.remove('hidden');
+}
+function closeModal(){document.getElementById('modal').classList.add('hidden');editingId=null;}
+function saveModal(){
+  const name=document.getElementById('m_name').value.trim();
+  if(!name){alert('タスク名を入力してください');return;}
+  const status=document.getElementById('m_status').value;
+  let start=document.getElementById('m_start').value||null, due=document.getElementById('m_due').value||null;
+  if(status!=='active'){start=null;due=null;} else if(!start&&due){start=due;}
+  const kind=(start&&due&&start!==due)?'span':'milestone';
+  const obj={name,owner:document.getElementById('m_owner').value.trim(),cat:document.getElementById('m_cat').value,
+             status,start,due,kind,note:document.getElementById('m_note').value.trim()};
+  if(editingId){
+    if(String(editingId).startsWith('a')){const a=edits.add.find(x=>String(x.id)===String(editingId));Object.assign(a,obj);}
+    else edits.ov[String(editingId)]=obj;
+  }else{obj.id='a'+Date.now();edits.add.push(obj);}
+  saveEdits();rebuildItems();closeModal();render();
+}
+function deleteTask(){
+  if(!editingId)return; if(!confirm('このタスクを削除しますか？'))return;
+  if(String(editingId).startsWith('a'))edits.add=edits.add.filter(x=>String(x.id)!==String(editingId));
+  else{edits.del.push(String(editingId));delete edits.ov[String(editingId)];}
+  saveEdits();rebuildItems();closeModal();render();
+}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(ITEMS,null,2)],{type:'application/json'});
+  const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='tasks_export_'+new Date().toISOString().slice(0,10)+'.json';a.click();URL.revokeObjectURL(u);
+}
+function changeText(){
+  const L=['# ガント変更サマリー '+new Date().toLocaleString('ja-JP')];
+  (edits.add||[]).forEach(a=>L.push('【追加】'+a.name+'｜担当:'+(a.owner||'—')+'｜'+CATLABEL[a.cat]+'｜期限:'+(a.due||'—')+(a.note?'｜備考:'+a.note:'')));
+  Object.keys(edits.ov||{}).forEach(id=>{const b=DATA.items.find(i=>String(i.id)===id)||{};const o=edits.ov[id];
+    L.push('【変更】'+(b.name||'')+' → 名:'+o.name+'｜担当:'+(o.owner||'—')+'｜'+CATLABEL[o.cat]+'｜期限:'+(o.due||'—'));});
+  (edits.del||[]).forEach(id=>{const b=DATA.items.find(i=>String(i.id)===String(id));L.push('【削除】'+(b?b.name:id));});
+  if(L.length===1)L.push('(変更はありません)');
+  return L.join('\n');
+}
+
+document.getElementById('views').addEventListener('click',e=>{if(e.target.dataset.v){state.view=e.target.dataset.v;state.sub='all';localStorage.setItem(LSVIEW,state.view);render();}});
+document.getElementById('subtabs').addEventListener('click',e=>{if(e.target.dataset.k!==undefined){state.sub=e.target.dataset.k;render();}});
+document.getElementById('board').addEventListener('click',e=>{const eb=e.target.closest('[data-edit]');if(eb)openModal(eb.dataset.edit);});
+document.getElementById('board').addEventListener('change',e=>{if(e.target.classList.contains('cb')){const id=e.target.dataset.id;if(e.target.checked)done[id]=true;else delete done[id];localStorage.setItem(LSKEY,JSON.stringify(done));render();}});
+ownerSel.addEventListener('change',e=>{state.owner=e.target.value;render();});
+document.getElementById('search').addEventListener('input',e=>{state.q=e.target.value;render();});
+document.getElementById('hideDone').addEventListener('change',e=>{state.hideDone=e.target.checked;render();});
+document.getElementById('overdueOnly').addEventListener('change',e=>{state.overdueOnly=e.target.checked;render();});
+document.getElementById('alarmGo').addEventListener('click',()=>{state.overdueOnly=true;document.getElementById('overdueOnly').checked=true;state.view='day';state.sub='all';render();window.scrollTo({top:0,behavior:'smooth'});});
+document.getElementById('printBtn').addEventListener('click',()=>window.print());
+document.getElementById('resetBtn').addEventListener('click',()=>{if(confirm('完了チェックをすべて解除しますか？')){done={};localStorage.setItem(LSKEY,'{}');render();}});
+document.getElementById('addBtn').addEventListener('click',()=>openModal(null));
+document.getElementById('exportBtn').addEventListener('click',exportJSON);
+document.getElementById('copyBtn').addEventListener('click',()=>{const t=changeText();navigator.clipboard.writeText(t).then(()=>alert('変更サマリーをコピーしました。倉岡さんへ／AIへ貼り付けて共有できます。')).catch(()=>{prompt('コピーできませんでした。手動でコピーしてください：',t);});});
+document.getElementById('editResetBtn').addEventListener('click',()=>{if(confirm('このブラウザの編集内容（追加・変更・削除）をすべて破棄し、元のガントに戻しますか？')){edits={ov:{},add:[],del:[]};saveEdits();rebuildItems();render();}});
+document.getElementById('m_save').addEventListener('click',saveModal);
+document.getElementById('m_cancel').addEventListener('click',closeModal);
+document.getElementById('m_delete').addEventListener('click',deleteTask);
+document.getElementById('modal').addEventListener('click',e=>{if(e.target.id==='modal')closeModal();});
+
+rebuildItems();render();
+</script>
+</body>
+</html>
